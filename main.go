@@ -1,10 +1,8 @@
 package main
 
 import (
-	// "fmt"
-	"net/http"
-	"github.com/gin-gonic/gin"
 	"github.com/nanadjei/go-jwt/initializers"
+	"github.com/nanadjei/go-jwt/routes"
 )
 
 func init() {
@@ -14,11 +12,6 @@ func init() {
 }
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-		})
-	})
-	r.Run() 
+	routes.AppRoutes()
+	routes.Router.Run() 
 }

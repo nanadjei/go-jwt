@@ -3,7 +3,7 @@ package models
 import "gorm.io/gorm"
 
 type User struct {
+	Email string `gorm:"unique"`
+	Password string `json:"-"`
 	gorm.Model
-  	Email string `gorm:"unique"`
-	Password string
 }
