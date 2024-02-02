@@ -3,7 +3,7 @@ package middleware
 import (
 	"os"
 	"net/http"
-	"fmt"
+	// "fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,9 +18,9 @@ func Auth(context *gin.Context){
 	}
 	
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected method %v", token.Header["alg"])
-		}
+		// if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		// 	return nil, fmt.Errorf("Unexpected method %v", token.Header["alg"])
+		// }
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	

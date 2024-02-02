@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"os"
-	"net/http"
-	"fmt"
+	// "net/http"
+	// "fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,9 +20,9 @@ func Guest(context *gin.Context){
 	}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected method %v", token.Header["alg"])
-		}
+		// if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		// 	return nil, fmt.Errorf("Unexpected method %v", token.Header["alg"])
+		// }
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
@@ -36,6 +36,6 @@ func Guest(context *gin.Context){
 	}
 
 	// Token is invalid or not expired, abort the request
-	context.AbortWithStatus(http.StatusUnauthorized)
+	context.Next()
 	return
 }
