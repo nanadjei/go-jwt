@@ -33,16 +33,28 @@ func Signup(context *gin.Context){
 		response.Error(context, "password", "Could not hash password")
 		return 
 	}
+
+	var user models.User // The User Struct
+	
+	// Get email and password from request
+	initializers.DB.First(&user, "email = ?", Body.Email)
+	// Look out for the use with that credentials
+	if user.Email == Body.Email {
+		response.Error(context, "email", "Email already taken")
+		return 
+	}
+
 	// Store the user data in the db
-	user := models.User{Email: Body.Email, Password: string(hash)}
-	results := initializers.DB.Create(&user)
+	// user := models.User{Email: Body.Email, Password: string(hash)}
+	authUser := &models.User{Email: Body.Email, Password: string(hash)}
+	results := initializers.DB.Create(authUser)
 	
 	if results.Error != nil {
 		response.Error(context, "password", "Could not save data into database")
 		return 
 	}
 	// Respond back to the request
-	response.Success(context, "A new record was created successfully", transformers.UserTransform(user))
+	response.Success(context, "A new record was created successfully", transformers.UserTransform(*authUser))
 	return
 }
 
@@ -116,6 +128,8 @@ func Signout(context *gin.Context) {
 		return
 	}
 	context.SetCookie("Authorization", "", -1, "/", "", false, true)
-	context.AbortWithStatus(http.StatusUnauthorized)
+	context.JSON(http.StatusUnauthorized, gin.H{
+		"message": "You have successfully signed out",
+	})
 	return
 }
