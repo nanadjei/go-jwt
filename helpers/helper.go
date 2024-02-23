@@ -11,21 +11,13 @@ import (
  	"encoding/base64"
 )
 
+// Generate a random 6 digit code
 func GenerateOTPcode() int {
 	// Set a seed for randomness based on current time
 	rand.Seed(time.Now().UnixNano())
-
-	// Generate 4 digits random number
+	// Generate 5 digits random number
 	return rand.Intn(900000) + 100000
 }
-
-// func Encrypt(input string) string  {
-// 	plainText := []byte(input)
-// 	// hasher.Write([]byte(numValue))
-// 	hashByte := sha256.Sum256(plainText)
-
-// 	return hex.EncodeToString(hashByte[:])
-// }
 
 func Encode(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)

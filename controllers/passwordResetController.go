@@ -39,6 +39,8 @@ func ForgotPassword(context *gin.Context){
 	// Generate OTP code
 	sixDigitCode := helpers.GenerateOTPcode()
 
+	// println("SIX DIGIT CODE:", sixDigitCode)
+
 	// Convert the integer to string
 	hashedCode, err := helpers.Encrypt(strconv.Itoa(sixDigitCode))
 	
@@ -55,15 +57,13 @@ func ForgotPassword(context *gin.Context){
 	// Store the hashed 6 digits code for later verification
 	StoreHashToRedis(context , hashedCode, expiration)
 
-	SendOTPcode(context, Body.Email, sixDigitCode, expiration)
+	go SendOTPcode(context, Body.Email, sixDigitCode, expiration)
 	
 	response.Success(context, "Email Successfully sent.", transformers.UserTransform(user))
 	return
 }
 
 func SendOTPcode(context *gin.Context, email string, sixDigitCode int, expiration time.Duration) {
-
-	println("Email:", email)
 	
 	mailer := mailer.NewSMTPMail()
 	// Parse the template
@@ -103,17 +103,20 @@ func StoreHashToRedis(context *gin.Context, hashedString string, expiration time
 }
 
 func VerifyOTPcode(context *gin.Context) {
-	var Body struct {
+	var InputFields struct {
 		Email string `json:"email" validate:"required,email"`
-		Code int `json:"code" validate:"required"`
+		Code string `json:"code" validate:"required"`
 	}
 
-	if err := context.ShouldBind(&Body); err != nil {
-		response.Error(context, "", "Invalid input data")
+	// Bind the input fields in the request with that of the InputFields struct
+	if err := context.ShouldBind(&InputFields); err != nil {
+		response.Error(context, "form", "Could not bind to input")
 		return
 	}
 
-	if ok, errors := response.ValidateInputs(Body); !ok {
+	// Since InputFields is of type var and has been bind, it will now carry the key, value pairs 
+	// of the data sent from the request and can now be passed as an arg to the "ValidateInputs" method for validation
+	if ok, errors := response.ValidateInputs(InputFields); !ok {
 		response.ValidationError(context, errors, "Validation fails", 401)
 		return
 	}
@@ -121,14 +124,17 @@ func VerifyOTPcode(context *gin.Context) {
 	hashedCode, err := initializers.Redis().Get(context, "email").Result()
 
 	if err != nil {
-		response.Error(context, "code", "The code has expired...")
+		response.Error(context, "code", "The code has expired.")
 		return
 	}
 
 	val, err := helpers.Decrypt(hashedCode)
-	// switch val {
-	// 	case val != 
-	// }
+	code := InputFields.Code // The value of code passed from the request 
 
-	println("THE VALUE YOU ARE LOOKING FOR: ", val)
+	switch val == code {
+		case false:
+		response.Error(context, "code", "The code does not match")
+	case true:
+		response.Success(context, "Code successfully matched", nil)
+	}
 }
